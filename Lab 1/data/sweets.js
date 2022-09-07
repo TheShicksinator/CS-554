@@ -1,43 +1,54 @@
 const mongoCollections = require("./mongoCollections");
 const sweets = mongoCollections.sweets;
+// const { sweets } = require("./mongoCollections");
 const { ObjectId } = require("mongodb");
 const { checkString, checkId } = require("./validation");
 const validSweetMoods = [
-    "Happy",
-    "Sad",
-    "Angry",
-    "Excited",
-    "Surprised",
-    "Loved",
-    "Blessed",
-    "Greatful",
-    "Blissful",
-    "Silly",
-    "Chill",
-    "Motivated",
-    "Emotional",
-    "Annoyed",
-    "Lucky",
-    "Determined",
-    "Bored",
-    "Hungry",
-    "Disappointed",
-    "Worried",
+    "happy",
+    "sad",
+    "angry",
+    "excited",
+    "surprised",
+    "loved",
+    "blessed",
+    "grateful",
+    "blissful",
+    "silly",
+    "chill",
+    "motivated",
+    "emotional",
+    "annoyed",
+    "lucky",
+    "determined",
+    "bored",
+    "hungry",
+    "disappointed",
+    "worried",
 ];
 
 const getSweetById = async (id) => {
     id = checkId(id);
     const sweetCollection = await sweets();
     const sweet = await sweetCollection.findOne({ _id: ObjectId(id) });
-    if (!sweet) throw "sweet not found"; //as
+    if (!sweet) throw "sweet not found";
     return sweet;
 };
 
-const getFiftySweets = async (setNumber) => {};
+const getFiftySweets = async (setNumber = 1) => {
+    const sweetCollection = await sweets();
+    const sweetList = await sweetCollection
+        .find({})
+        .skip((setNumber - 1) * 50)
+        .limit(50)
+        .toArray();
+    if (sweetList.length === 0) throw "No sweets found";
+    return sweetList;
+};
 
 const createSweet = async (sweetText, sweetMood, userThatPosted) => {
     sweetText = checkString(sweetText, "sweetText");
     sweetMood = checkString(sweetMood, "sweetMood");
+    sweetMood = sweetMood.toLowerCase();
     if (!validSweetMoods.includes(sweetMood))
         throw (
             "Invalid sweet mood. Valid moods are: " + validSweetMoods.join(", ")
@@ -62,6 +73,7 @@ const updateSweet = async (id, sweetText, sweetMood) => {
     id = checkId(id);
     sweetText = checkString(sweetText, "sweetText");
     sweetMood = checkString(sweetMood, "sweetMood");
+    sweetMood = sweetMood.toLowerCase();
     if (!validSweetMoods.includes(sweetMood))
         throw (
             "Invalid sweet mood. Valid moods are: " + validSweetMoods.join(", ")
@@ -81,7 +93,8 @@ const likeSweetToggle = async (id, userThatLikedId) => {
     id = checkId(id);
     userThatLikedId = checkId(userThatLikedId);
     const sweetCollection = await sweets();
-    const sweet = await getSweetById(id);
+    const sweet = sweetCollection.findOne({ _id: ObjectId(id) });
+    if (!sweet) throw "sweet not found";
     const updatedInfo = await sweetCollection.updateOne(
         { _id: ObjectId(id) },
         sweet.likes.includes(userThatLikedId)
@@ -104,8 +117,21 @@ const replyToSweet = async (id, userThatReplied, replyText) => {
         reply: replyText,
     };
     const updatedInfo = await sweetCollection.updateOne(
-        { _id: ObjectId(id) }, //TODO: does this count as supplying the id?
+        { _id: ObjectId(id) },
         { $push: { replies: newReply } }
+    );
+    if (!updatedInfo.acknowledged || !updatedInfo.modifiedCount)
+        throw "Could not update sweet";
+    const updatedSweet = await getSweetById(id);
+    return updatedSweet;
+};
+
+const deleteSweetReply = async (id, userThatReplied) => {
+    id = checkId(id);
+    const sweetCollection = await sweets();
+    const updatedInfo = await sweetCollection.updateOne(
+        { _id: ObjectId(id) },
+        { $pull: { replies: { userThatPostedReply: userThatReplied } } }
     );
     if (!updatedInfo.acknowledged || !updatedInfo.modifiedCount)
         throw "Could not update sweet";
@@ -117,4 +143,8 @@ module.exports = {
     getSweetById,
     getFiftySweets,
     createSweet,
+    replyToSweet,
+    likeSweetToggle,
+    updateSweet,
+    deleteSweetReply,
 };

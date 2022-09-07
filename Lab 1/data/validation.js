@@ -17,8 +17,16 @@ module.exports = {
         strVal = strVal.trim();
         if (strVal.length === 0)
             throw `Error: ${varName} cannot be an empty string or string with just spaces`;
-        if (!isNaN(strVal))
-            throw `Error: ${strVal} is not a valid value for ${varName} as it only contains digits`;
         return strVal;
+    },
+
+    checkLogin: (username, password) => {
+        if (username.length < 4 || password.length < 6) {
+            throw "Invalid username or password length";
+        }
+        const regex_username = new RegExp(/^[a-z0-9]+$/i);
+        if (!regex_username.test(username)) {
+            throw "Invalid username";
+        }
     },
 };
