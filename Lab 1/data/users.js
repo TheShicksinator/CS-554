@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 const saltRounds = 16;
 const { ObjectId } = require("mongodb");
-const mongoCollections = require("./mongoCollections");
+const mongoCollections = require("../config/mongoCollections");
 const users = mongoCollections.users;
 const { checkString, checkLogin, checkId } = require("./validation");
 
@@ -56,7 +56,7 @@ const createUser = async (name, username, password) => {
     checkLogin(username, password);
 
     const userCollection = await users();
-    const takenUsername = await userCollection.findOne({ username: username });
+    const takenUsername = await getUserByUsername(username);
     if (takenUsername) throw "username already in use";
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     const newUser = {

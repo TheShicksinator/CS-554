@@ -1,6 +1,5 @@
-const mongoCollections = require("./mongoCollections");
+const mongoCollections = require("../config/mongoCollections");
 const sweets = mongoCollections.sweets;
-// const { sweets } = require("./mongoCollections");
 const { ObjectId } = require("mongodb");
 const { checkString, checkId } = require("./validation");
 const validSweetMoods = [
@@ -35,7 +34,8 @@ const getSweetById = async (id) => {
 };
 
 const getFiftySweets = async (setNumber = 1) => {
-    if (setNumber < 1) throw "setNumber must be greater than 0";
+    if (typeof setNumber !== "number" || setNumber < 1)
+        throw "setNumber must be a positive number";
     const sweetCollection = await sweets();
     const sweetList = await sweetCollection
         .find({})
@@ -70,19 +70,23 @@ const createSweet = async (sweetText, sweetMood, userThatPosted) => {
     return sweet;
 };
 
-const updateSweet = async (id, sweetText, sweetMood) => {
+const updateSweet = async (id, updatedObject) => {
     id = checkId(id);
-    sweetText = checkString(sweetText, "sweetText");
-    sweetMood = checkString(sweetMood, "sweetMood");
-    sweetMood = sweetMood.toLowerCase();
-    if (!validSweetMoods.includes(sweetMood))
-        throw (
-            "Invalid sweet mood. Valid moods are: " + validSweetMoods.join(", ")
+    let updatedPostData = {};
+    if (updatedObject.sweetText)
+        updatedPostData.sweetText = checkString(
+            updatedObject.sweetText,
+            "sweetText"
+        );
+    if (updatedObject.sweetMood)
+        updatedPostData.sweetMood = checkString(
+            updatedObject.sweetMood,
+            "sweetMood"
         );
     const sweetCollection = await sweets();
     const updatedInfo = await sweetCollection.updateOne(
         { _id: ObjectId(id) },
-        { $set: { sweetText: sweetText, sweetMood: sweetMood } }
+        { $set: updatedPostData }
     );
     if (!updatedInfo.acknowledged || !updatedInfo.modifiedCount)
         throw "Could not update sweet";
