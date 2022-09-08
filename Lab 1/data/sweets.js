@@ -35,6 +35,7 @@ const getSweetById = async (id) => {
 };
 
 const getFiftySweets = async (setNumber = 1) => {
+    if (setNumber < 1) throw "setNumber must be greater than 0";
     const sweetCollection = await sweets();
     const sweetList = await sweetCollection
         .find({})
@@ -126,16 +127,17 @@ const replyToSweet = async (id, userThatReplied, replyText) => {
     return updatedSweet;
 };
 
-const deleteSweetReply = async (id, userThatReplied) => {
-    id = checkId(id);
+const deleteSweetReply = async (sweetId, replyId) => {
+    sweetId = checkId(sweetId);
+    replyId = checkId(replyId);
     const sweetCollection = await sweets();
     const updatedInfo = await sweetCollection.updateOne(
-        { _id: ObjectId(id) },
-        { $pull: { replies: { userThatPostedReply: userThatReplied } } }
+        { _id: ObjectId(sweetId) },
+        { $pull: { replies: { _id: ObjectId(replyId) } } }
     );
     if (!updatedInfo.acknowledged || !updatedInfo.modifiedCount)
         throw "Could not update sweet";
-    const updatedSweet = await getSweetById(id);
+    const updatedSweet = await getSweetById(sweetId);
     return updatedSweet;
 };
 

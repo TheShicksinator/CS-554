@@ -35,6 +35,18 @@ const getUserById = async (id) => {
     return dbUser;
 };
 
+const getUserByUsername = async (username) => {
+    username = checkString(username, "username");
+    const userCollection = await users();
+    const dbUser = await userCollection.findOne({
+        username: username,
+    });
+    if (!dbUser) {
+        return false;
+    }
+    return dbUser;
+};
+
 const createUser = async (name, username, password) => {
     if (!name) throw "name not provided";
     if (typeof name !== "string") throw "name must be a string";
@@ -56,7 +68,12 @@ const createUser = async (name, username, password) => {
     if (!insertInfo.acknowledged || !insertInfo.insertedId) {
         throw "Could not create user";
     }
-    return { userId: insertInfo.insertedId.toString(), userCreated: true };
+    return { _id: insertInfo.insertedId.toString(), username: username };
 };
 
-module.exports = {};
+module.exports = {
+    authenticate,
+    getUserById,
+    createUser,
+    getUserByUsername,
+};
