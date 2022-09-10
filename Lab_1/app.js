@@ -16,10 +16,19 @@ app.use(
     })
 );
 
-//TODO: middleware stuff
+app.patch("/sweets/:id", async (req, res, next) => {
+    console.log("sweets/:id patch middleware");
+    let id = req.params.id;
+    let sweet = await sweets.getSweetById(id);
+    if (sweet.userThatPosted._id != req.session.user._id) {
+        return res.status(403).json({ error: "You cannot edit this sweet!" });
+    }
+    next();
+});
 
-app.use("/sweets", async (req, res, next) => {
-    if ((req.method == "PATCH" || req.method == "POST") && !req.session.user) {
+app.post("/sweets/:id/replies", async (req, res, next) => {
+    console.log("sweets/:id/replies middleware");
+    if (!req.session.user) {
         return res
             .status(401)
             .json({ error: "You must be logged in to do that!" });
@@ -27,49 +36,47 @@ app.use("/sweets", async (req, res, next) => {
     next();
 });
 
-app.use("/sweets/:id", async (req, res, next) => {
-    if (req.method == "PATCH") {
-        let id = req.params.id;
-        let sweet = await sweets.getSweetById(id);
-        if (sweet.userThatPosted._id != req.session.user._id) {
-            return res
-                .status(403)
-                .json({ error: "You cannot edit this sweet!" });
-        }
-    }
-    next();
-});
-
-app.use("/sweets/:id/replies", async (req, res, next) => {
-    if (req.method == "POST" && !req.session.user) {
+app.delete("/sweets/:sweetId/:replyId", async (req, res, next) => {
+    console.log("sweets/:sweetId/:replyId middleware");
+    if (!req.session.user) {
         return res
             .status(401)
             .json({ error: "You must be logged in to do that!" });
     }
-    next();
-});
-
-app.use("/sweets/:sweetId/:replyId", async (req, res, next) => {
-    if (req.method == "DELETE" && !req.session.user) {
-        return res
-            .status(401)
-            .json({ error: "You must be logged in to do that!" });
-    }
+    let sweetId = req.params.sweetId;
+    let replyId = req.params.replyId;
     const sweet = await sweets.getSweetById(sweetId);
     if (!sweet) {
-        res.status(404).json({ error: "Sweet not found" });
-        return;
+        return res.status(404).json({ error: "Sweet not found" });
     }
     const reply = sweet.replies.find((reply) => reply._id == replyId);
     if (!reply) {
-        res.status(404).json({ error: "Reply not found" });
-        return;
+        return res.status(404).json({ error: "Reply not found" });
     }
     if (reply.userThatPostedReply._id != req.session.user._id) {
-        res.status(403).json({
+        return res.status(403).json({
             error: "You can only delete your own replies",
         });
-        return;
+    }
+    next();
+});
+
+app.patch("/sweets", async (req, res, next) => {
+    console.log("sweets middleware");
+    if (!req.session.user) {
+        return res
+            .status(401)
+            .json({ error: "You must be logged in to do that!" });
+    }
+    next();
+});
+
+app.post("/sweets", async (req, res, next) => {
+    console.log("sweets middleware");
+    if (!req.session.user) {
+        return res
+            .status(401)
+            .json({ error: "You must be logged in to do that!" });
     }
     next();
 });

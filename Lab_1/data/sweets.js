@@ -65,7 +65,7 @@ const createSweet = async (sweetText, sweetMood, userThatPosted) => {
     const insertInfo = await sweetCollection.insertOne(newSweet);
     if (!insertInfo.acknowledged || !insertInfo.insertedId)
         throw "Could not add sweet";
-    const newId = insertInfo.insertedId;
+    const newId = insertInfo.insertedId.toString();
     const sweet = await getSweetById(newId);
     return sweet;
 };
@@ -98,7 +98,7 @@ const likeSweetToggle = async (id, userThatLikedId) => {
     id = checkId(id);
     userThatLikedId = checkId(userThatLikedId);
     const sweetCollection = await sweets();
-    const sweet = sweetCollection.findOne({ _id: ObjectId(id) });
+    const sweet = await sweetCollection.findOne({ _id: ObjectId(id) });
     if (!sweet) throw "sweet not found";
     const updatedInfo = await sweetCollection.updateOne(
         { _id: ObjectId(id) },
@@ -112,14 +112,14 @@ const likeSweetToggle = async (id, userThatLikedId) => {
     return updatedSweet;
 };
 
-const replyToSweet = async (id, userThatReplied, replyText) => {
+const replyToSweet = async (id, userThatReplied, reply) => {
     id = checkId(id);
-    replyText = checkString(replyText, "replyText");
+    reply = checkString(reply, "reply");
     const sweetCollection = await sweets();
     const newReply = {
         _id: ObjectId(),
         userThatPostedReply: userThatReplied,
-        reply: replyText,
+        reply: reply,
     };
     const updatedInfo = await sweetCollection.updateOne(
         { _id: ObjectId(id) },

@@ -27,92 +27,121 @@ const validSweetMoods = [
     "worried",
 ];
 
-router
-    .route("/")
-    .get(async (req, res) => {
-        try {
-            const listOfSweets = await sweets.getFiftySweets();
-            return res.json(listOfSweets);
-        } catch (error) {
-            return res.status(404).json({ error: error });
-        }
-    })
-    .post(async (req, res) => {
-        try {
-            if (!req.session.user) {
-                return res.status(401).json({ error: "You must be logged in" });
-            }
-            if (!req.body) {
-                return res.status(400).json({
-                    error: "You must provide data to create a sweet",
-                });
-            }
-            const { sweetText, sweetMood } = req.body;
-            try {
-                sweetText = xss(sweetText);
-                sweetMood = xss(sweetMood);
-                sweetText = validation.checkString(sweetText, "sweetText");
-                sweetMood = validation.checkString(sweetMood, "sweetMood");
-            } catch (error) {
-                return res.status(400).json({ error: error });
-            }
-            sweetMood = sweetMood.toLowerCase();
-            if (!validSweetMoods.includes(sweetMood)) {
-                return res.status(400).json({ error: "Invalid sweetMood" });
-            }
-            const newSweet = await sweets.createSweet(sweetText, sweetMood, {
-                _id: ObjectId(req.session.user._id),
-                username: req.session.user.username,
-            });
-            return res.json(newSweet);
-        } catch (error) {
-            return res.status(500).json({ error: error });
-        }
-    });
-
-router.route("/?page=:page").get(async (req, res) => {
+router.route("/signup").post(async (req, res) => {
+    //checked
+    console.log("signup");
     try {
-        if (!req.params.page || isNaN(req.params.page)) {
-            return res.status(400).json({ error: "Invalid or no page number" });
+        if (!req.body) {
+            return res
+                .status(400)
+                .json({ error: "You must provide data to sign up" });
         }
-        let numPage = parseInt(req.params.page);
-        if (numPage < 1) {
-            return res.status(400).json({ error: "Invalid page number" });
+        let { name, username, password } = req.body;
+        try {
+            // username = xss(username);
+            username = validation.checkString(username, "username");
+            // password = xss(password);
+            password = validation.checkString(password, "password");
+            // name = xss(name);
+            name = validation.checkString(name, "name");
+        } catch (error) {
+            return res.status(400).json(`${error}`);
         }
-        const listOfSweets = await sweets.getFiftySweets(numPage);
-        if (listOfSweets.length === 0) {
-            return res.status(404).json({ error: "No sweets found" });
+        if (await users.getUserByUsername(username)) {
+            return res.status(400).json({ error: "Username already taken" });
         }
-        return res.json(listOfSweets);
+        const user = await users.createUser(name, username, password);
+        req.session.user = user;
+        const newUser = await users.getUserById(user._id);
+        return res.json({
+            _id: newUser._id,
+            name: newUser.name,
+            username: newUser.username,
+        });
     } catch (error) {
-        return res.status(500).json({ error: error });
+        return res.status(500).json(`${error}`);
+    }
+});
+
+router.route("/login").post(async (req, res) => {
+    //checked
+    try {
+        if (!req.body) {
+            return res
+                .status(400)
+                .json({ error: "You must provide data to log in" });
+        }
+        let { username, password } = req.body;
+        try {
+            username = xss(username);
+            username = validation.checkString(username, "username");
+            password = xss(password);
+            password = validation.checkString(password, "password");
+            validation.checkLogin(username, password);
+        } catch (error) {
+            return res.status(400).json(`${error}`);
+        }
+        try {
+            const auth_response = await users.authenticate(username, password);
+            req.session.user = {
+                _id: auth_response.userId,
+                username: username,
+            };
+        } catch (error) {
+            return res.status(401).json(`${error}`);
+        }
+        let user = await users.getUserById(req.session.user._id);
+        return res.json({
+            _id: user._id,
+            name: user.name,
+            username: user.username,
+        });
+    } catch (error) {
+        return res.status(500).json(`${error}`);
+    }
+});
+
+router.route("/logout").get(async (req, res) => {
+    //checked
+    try {
+        if (!req.session.user) {
+            return res.status(401).json({ error: "You must be logged in" });
+        }
+        req.session.destroy();
+        return res.status(200).json("Logged out");
+    } catch (error) {
+        return res.status(500).json(`${error}`);
     }
 });
 
 router
     .route("/:id")
     .get(async (req, res) => {
+        //checked
+        console.log("get sweet by id");
         try {
             if (!req.params.id) {
                 return res.status(400).json({ error: "No id provided" });
             }
+            let id = req.params.id;
             try {
-                let id = xss(req.params.id);
+                id = xss(id);
                 id = validation.checkId(id);
             } catch (error) {
-                return res.status(400).json({ error: error });
+                return res.status(400).json(`${error}`);
             }
             try {
                 const sweet = await sweets.getSweetById(id);
                 return res.json(sweet);
             } catch (error) {
-                return res.status(404).json({ error: error });
+                return res.status(404).json(`${error}`);
             }
         } catch (error) {
-            return res.status(500).json({ error: error });
+            return res.status(500).json(`${error}`);
         }
     })
     .patch(async (req, res) => {
+        //checked
         try {
             if (!req.session.user) {
                 return res.status(401).json({ error: "You must be logged in" });
@@ -125,11 +154,12 @@ router
                     error: "You must provide data to update a sweet",
                 });
             }
+            let id = req.params.id;
             try {
                 if (!req.body.sweetText && !req.body.sweetMood) {
                     throw "You must provide data to update a sweet";
                 }
-                let id = xss(req.params.id);
+                id = xss(id);
                 if (req.body.sweetText) {
                     let sweetText = xss(req.body.sweetText);
                     sweetText = validation.checkString(sweetText, "sweetText");
@@ -143,31 +173,29 @@ router
                     }
                 }
             } catch (error) {
-                return res.status(400).json({ error: error });
+                return res.status(400).json(`${error}`);
             }
+            const oldSweet = await sweets.getSweetById(id);
             try {
-                const oldSweet = await sweets.getSweetById(id);
                 if (oldSweet.userThatPosted._id != req.session.user._id)
                     throw "You can only edit your own sweets";
             } catch (error) {
-                return res.status(403).json({ error: error });
+                return res.status(403).json(`${error}`);
             }
             let updatedObject = {};
             if (req.body.sweetText && req.body.sweetText != oldSweet.sweetText)
                 updatedObject.sweetText = req.body.sweetText;
             if (req.body.sweetMood && req.body.sweetMood != oldSweet.sweetMood)
                 updatedObject.sweetMood = req.body.sweetMood;
-            const updatedSweet = await sweets.updateSweetById(
-                id,
-                updatedObject
-            );
+            const updatedSweet = await sweets.updateSweet(id, updatedObject);
             return res.json(updatedSweet);
         } catch (error) {
-            return res.status(500).json({ error: error });
+            return res.status(500).json(`${error}`);
         }
     });
 
 router.route("/:id/likes").post(async (req, res) => {
+    //checked
     try {
         if (!req.session.user) {
             return res.status(401).json({ error: "You must be logged in" });
@@ -175,11 +203,12 @@ router.route("/:id/likes").post(async (req, res) => {
         if (!req.params.id) {
             return res.status(400).json({ error: "No id provided" });
         }
+        let id = req.params.id;
         try {
-            let id = xss(req.params.id);
+            id = xss(id);
             id = validation.checkId(id);
         } catch (error) {
-            return res.status(400).json({ error: error });
+            return res.status(400).json(`${error}`);
         }
         const sweet = await sweets.getSweetById(id);
         if (!sweet) {
@@ -188,11 +217,12 @@ router.route("/:id/likes").post(async (req, res) => {
         const like = await sweets.likeSweetToggle(id, req.session.user._id);
         return res.json(like);
     } catch (error) {
-        return res.status(500).json({ error: error });
+        return res.status(500).json(`${error}`);
     }
 });
 
 router.route("/:id/replies").post(async (req, res) => {
+    //checked
     try {
         if (!req.session.user) {
             return res.status(401).json({ error: "You must be logged in" });
@@ -205,35 +235,33 @@ router.route("/:id/replies").post(async (req, res) => {
                 error: "You must provide data to create a reply",
             });
         }
-        const { replyText } = req.body;
+        let { reply } = req.body;
+        let id = req.params.id;
         try {
-            replyText = xss(replyText);
-            replyText = validation.checkString(replyText, "replyText");
+            reply = xss(reply);
+            reply = validation.checkString(reply, "reply");
         } catch (error) {
-            return res.status(400).json({ error: error });
+            return res.status(400).json(`${error}`);
         }
         try {
-            let id = xss(req.params.id);
+            id = xss(id);
             id = validation.checkId(id);
         } catch (error) {
-            return res.status(400).json({ error: error });
+            return res.status(400).json(`${error}`);
         }
         const sweet = await sweets.getSweetById(id);
         if (!sweet) {
             return res.status(404).json({ error: "Sweet not found" });
         }
-        const reply = await sweets.replyToSweet(
-            id,
-            req.session.user,
-            replyText
-        );
-        return res.json(reply);
+        const replied = await sweets.replyToSweet(id, req.session.user, reply);
+        return res.json(replied);
     } catch (error) {
-        return res.status(500).json({ error: error });
+        return res.status(500).json(`${error}`);
     }
 });
 
 router.route("/:sweetId/:replyId").delete(async (req, res) => {
+    //checked
     try {
         if (!req.session.user) {
             return res.status(401).json({ error: "You must be logged in" });
@@ -241,13 +269,15 @@ router.route("/:sweetId/:replyId").delete(async (req, res) => {
         if (!req.params.sweetId || !req.params.replyId) {
             return res.status(400).json({ error: "No id provided" });
         }
+        let sweetId = req.params.sweetId,
+            replyId = req.params.replyId;
         try {
-            let sweetId = xss(req.params.sweetId);
+            sweetId = xss(req.params.sweetId);
             sweetId = validation.checkId(sweetId);
-            let replyId = xss(req.params.replyId);
+            replyId = xss(req.params.replyId);
             replyId = validation.checkId(replyId);
         } catch (error) {
-            return res.status(400).json({ error: error });
+            return res.status(400).json(`${error}`);
         }
         const sweet = await sweets.getSweetById(sweetId);
         if (!sweet) {
@@ -265,91 +295,79 @@ router.route("/:sweetId/:replyId").delete(async (req, res) => {
         const deletedReply = await sweets.deleteSweetReply(sweetId, replyId);
         return res.json(deletedReply);
     } catch (error) {
-        return res.status(500).json({ error: error });
+        return res.status(500).json(`${error}`);
     }
 });
 
-router.route("/signup").post(async (req, res) => {
-    try {
-        if (!req.body) {
-            return res
-                .status(400)
-                .json({ error: "You must provide data to sign up" });
-        }
-        let { name, username, password } = req.body;
+router
+    .route("/")
+    .get(async (req, res) => {
+        //checked
+        console.log("pages of posts");
         try {
-            username = xss(username);
-            username = validation.checkString(username, "username");
-            password = xss(password);
-            password = validation.checkString(password, "password");
-            name = xss(name);
-            name = validation.checkString(name, "name");
+            let listOfSweets = [];
+            if (req.query.page) {
+                console.log("found params.page");
+                if (isNaN(req.query.page)) {
+                    return res.status(400).json({ error: "Invalid page" });
+                }
+                let numPage = parseInt(req.query.page);
+                if (numPage < 1) {
+                    return res
+                        .status(400)
+                        .json({ error: "Invalid page number" });
+                }
+                try {
+                    listOfSweets = await sweets.getFiftySweets(numPage);
+                } catch (error) {
+                    return res.status(404).json(`${error}`);
+                }
+            } else {
+                try {
+                    listOfSweets = await sweets.getFiftySweets();
+                } catch (error) {
+                    return res.status(404).json(`${error}`);
+                }
+            }
+            return res.json(listOfSweets);
         } catch (error) {
-            return res.status(400).json({ error: error });
+            return res.status(500).json(`${error}`);
         }
-        if (users.getUserByUsername(username)) {
-            return res.status(400).json({ error: "Username already taken" });
-        }
-        const user = await users.createUser(name, username, password);
-        req.session.user = user;
-        const newUser = await users.getUserById(user._id);
-        return res.json({
-            _id: newUser._id,
-            name: newUser.name,
-            username: newUser.username,
-        });
-    } catch (error) {
-        return res.status(500).json({ error: error });
-    }
-});
-
-router.route("/login").post(async (req, res) => {
-    try {
-        if (!req.body) {
-            return res
-                .status(400)
-                .json({ error: "You must provide data to log in" });
-        }
-        let { username, password } = req.body;
+    })
+    .post(async (req, res) => {
+        //checked
+        console.log("new post");
         try {
-            username = xss(username);
-            username = validation.checkString(username, "username");
-            password = xss(password);
-            password = validation.checkString(password, "password");
-            validation.checkLogin(username, password);
+            if (!req.session.user) {
+                return res.status(401).json({ error: "You must be logged in" });
+            }
+            if (!req.body) {
+                return res.status(400).json({
+                    error: "You must provide data to create a sweet",
+                });
+            }
+            let { sweetText, sweetMood } = req.body;
+            try {
+                sweetText = xss(sweetText);
+                sweetMood = xss(sweetMood);
+                sweetText = validation.checkString(sweetText, "sweetText");
+                sweetMood = validation.checkString(sweetMood, "sweetMood");
+            } catch (error) {
+                return res.status(400).json(`${error}`);
+            }
+            sweetMood = sweetMood.toLowerCase();
+            if (!validSweetMoods.includes(sweetMood)) {
+                return res.status(400).json({ error: "Invalid sweetMood" });
+            }
+            const newSweet = await sweets.createSweet(sweetText, sweetMood, {
+                _id: ObjectId(req.session.user._id),
+                username: req.session.user.username,
+            });
+            return res.json(newSweet);
         } catch (error) {
-            return res.status(400).json({ error: error });
+            console.log(error);
+            return res.status(500).json(`${error}`);
         }
-        try {
-            const auth_response = await users.authenticate(username, password);
-            req.session.user = {
-                _id: auth_response.userId,
-                username: username,
-            };
-        } catch (error) {
-            return res.status(401).json({ error: error });
-        }
-        let user = await users.getUserById(req.session.user._id);
-        return res.json({
-            _id: user._id,
-            name: user.name,
-            username: user.username,
-        });
-    } catch (error) {
-        return res.status(500).json({ error: error });
-    }
-});
-
-router.route("/logout").get(async (req, res) => {
-    try {
-        if (!req.session.user) {
-            return res.status(401).json({ error: "You must be logged in" });
-        }
-        req.session.destroy();
-        return res.status(200).json("Logged out");
-    } catch (error) {
-        return res.status(500).json({ error: error });
-    }
-});
+    });
 
 module.exports = router;
