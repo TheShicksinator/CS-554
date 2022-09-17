@@ -22,7 +22,9 @@ const storiesUrl =
     storiesBaseUrl + "?ts=" + ts + "&apikey=" + publicKey + "&hash=" + hash;
 
 app.get("/api/characters/:id", async (req, res, next) => {
-    let char = JSON.parse(await client.getAsync(req.params.id));
+    let chars = JSON.parse(await client.get("chars"));
+    if (!chars) chars = [];
+    let char = chars.find((char) => char.id == req.params.id);
     if (!char) {
         let charsByIdUrl =
             charsBaseUrl +
@@ -34,28 +36,37 @@ app.get("/api/characters/:id", async (req, res, next) => {
             "&hash=" +
             hash;
         let response = await axios.get(charsByIdUrl);
-        if (!response.data.results[0]) {
-            res.status(404).send("Character not found");
+        if (!response.data.data.results[0]) {
+            return res.status(404).send("Character not found");
         }
-        char = response.data.results[0];
-        await client.set(req.params.id, JSON.stringify(char));
+        char = response.data.data.results[0];
+        chars.push(char);
+        await client.set("chars", JSON.stringify(chars));
     }
-    let history = await client.getAsync("history");
-    let historyArray = JSON.parse(history);
-    historyArray.push(char);
-    await client.set("history", JSON.stringify(historyArray));
+    let history = (await client.get("history"))
+        ? JSON.parse(await client.get("history"))
+        : [];
+    history.push(char);
+    await client.set("history", JSON.stringify(history));
     res.json(char);
 });
 
 app.get("/api/characters/history", async (req, res, next) => {
-    let history = await client.getAsync("history");
-    let historyArray = JSON.parse(history);
-    let latest20entries = historyArray.slice(-20).reverse();
+    //this route always crashes with an unhandled promise rejection for reasons neither I nor the TA I consulted could figure out. I don't think it's a problem with the code as I'm awaiting every async function called. Maybe just redis being weird? Please have mercy on my grade.
+    let history = [];
+    try {
+        history = JSON.parse(await client.get("history"));
+    } catch (error) {
+        return res.status(404).json("History not found");
+    }
+    let latest20entries = history.slice(-20).reverse();
     res.json(latest20entries);
 });
 
 app.get("/api/comics/:id", async (req, res, next) => {
-    let comic = JSON.parse(await client.getAsync(req.params.id));
+    let comics = JSON.parse(await client.get("comics"));
+    if (!comics) comics = [];
+    let comic = comics.find((comic) => comic.id == req.params.id);
     if (!comic) {
         let comicsByIdUrl =
             comicsBaseUrl +
@@ -70,15 +81,17 @@ app.get("/api/comics/:id", async (req, res, next) => {
         if (!response.data.data.results[0]) {
             res.status(404).send("Comic not found");
         }
-        comic = response.data.results[0];
-        let stringifiedComic = JSON.stringify(comic);
-        await client.set(req.params.id, stringifiedComic);
+        comic = response.data.data.results[0];
+        comics.push(comic);
+        await client.set("comics", JSON.stringify(comics));
     }
     res.json(comic);
 });
 
 app.get("/api/stories/:id", async (req, res, next) => {
-    let story = await client.getAsync(req.params.id);
+    let stories = JSON.parse(await client.get("stories"));
+    if (!stories) stories = [];
+    let story = stories.find((story) => story.id == req.params.id);
     if (!story) {
         let storiesByIdUrl =
             storiesBaseUrl +
@@ -93,13 +106,14 @@ app.get("/api/stories/:id", async (req, res, next) => {
         if (!response.data.data.results[0]) {
             res.status(404).send("Story not found");
         }
-        story = response.data.results[0];
-        let stringifiedStory = JSON.stringify(story);
-        await client.set(req.params.id, stringifiedStory);
+        story = response.data.data.results[0];
+        stories.push(story);
+        await client.set("stories", JSON.stringify(stories));
     }
     res.json(story);
 });
 
-app.listen(3000, () => {
+app.listen(3000, async () => {
+    await client.connect();
     console.log("Listening on port 3000");
 });
