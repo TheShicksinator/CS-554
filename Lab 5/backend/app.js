@@ -174,7 +174,12 @@ const resolvers = {
     },
 };
 
-const server = new ApolloServer({ typeDefs, resolvers });
+const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    cors: true,
+    context: () => ({ client }),
+});
 
 server.listen().then(({ url }) => {
     console.log(`🚀 Server ready at ${url}`);
