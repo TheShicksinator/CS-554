@@ -13,7 +13,7 @@ app.get("/pokemon/page/:pagenum", async (req, res) => {
             return res.status(400).send("No page number provided");
         }
         page = parseInt(page);
-        if (isNaN(page) || page < 1) {
+        if (isNaN(page) || page < 0) {
             return res.status(400).send("Invalid page number");
         }
         let pokemon = JSON.parse(await client.get("pokemon:" + page));
@@ -23,8 +23,7 @@ app.get("/pokemon/page/:pagenum", async (req, res) => {
             }
             return res.json(pokemon);
         }
-        const url =
-            "https://pokeapi.co/api/v2/pokemon?offset=" + (page - 1) * 20;
+        const url = "https://pokeapi.co/api/v2/pokemon?offset=" + page * 20;
         let response;
         try {
             response = await axios.get(url);
@@ -35,8 +34,8 @@ app.get("/pokemon/page/:pagenum", async (req, res) => {
             }
             return res.status(error.response.status).send(error);
         }
-        pokemon = response.data.results;
-        if (!pokemon || pokemon.length === 0) {
+        pokemon = response.data;
+        if (!pokemon.results || pokemon.results.length === 0) {
             client.set("pokemon:" + page, "404");
             return res.status(404).send("No pokemon found");
         }
@@ -93,7 +92,7 @@ app.use("*", (req, res) => {
     res.status(404).send("Not found");
 });
 
-app.listen(3000, async () => {
+app.listen(4000, async () => {
     await client.connect();
-    console.log("Server listening on port 3000");
+    console.log("Server listening on port 4000");
 });
