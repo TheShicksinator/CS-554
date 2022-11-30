@@ -12,16 +12,19 @@ const TrainersPage = () => {
     const [selectedTrainer, setSelectedTrainer] = useState(undefined);
     const [loading, setLoading] = useState(true);
     const dispatch = useDispatch();
-    useEffect(() => {
-        setSelectedTrainer(trainers.find((item) => item.selected));
-    }, []);
+    // useEffect(() => {
+    //     setSelectedTrainer(trainers.find((item) => item.selected));
+    // }, []);
     return (
         <div>
-            <h2>Trainers</h2>
+            <h1>Trainers</h1>
             <form
                 method="POST"
                 onSubmit={(e) => {
                     e.preventDefault();
+                    if (!newTrainer.trim().length) {
+                        return;
+                    }
                     dispatch(addTrainer(newTrainer));
                 }}
             >
@@ -36,7 +39,7 @@ const TrainersPage = () => {
             </form>
             {trainers.map((trainer) => (
                 <div key={trainer.id} className="trainerData">
-                    <h3>{trainer.name}</h3>
+                    <h2>{trainer.name}</h2>
                     <ul>
                         {trainer.team.map((pokemon) => (
                             <li key={pokemon.name}>

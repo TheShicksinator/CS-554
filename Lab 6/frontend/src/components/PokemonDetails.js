@@ -47,13 +47,13 @@ const PokemonDetails = () => {
     return (
         <div>
             {loading ? (
-                <h2>Loading...</h2>
+                <h1>Loading...</h1>
             ) : (
                 <div>
-                    <h2>{pokemon.name}</h2>
+                    <h1>{pokemon.name}</h1>
                     <img src={image} alt={pokemon.name} />
                     <div className="pokemonTraits">
-                        <h3>Abilities</h3>
+                        <h2>Abilities</h2>
                         <ul>
                             {pokemon.abilities.map((ability) => (
                                 <li key={ability.ability.name}>
@@ -61,13 +61,13 @@ const PokemonDetails = () => {
                                 </li>
                             ))}
                         </ul>
-                        <h3>Types</h3>
+                        <h2>Types</h2>
                         <ul>
                             {pokemon.types.map((type) => (
                                 <li key={type.type.name}>{type.type.name}</li>
                             ))}
                         </ul>
-                        <h3>Stats</h3>
+                        <h2>Stats</h2>
                         <ul>
                             {pokemon.stats.map((stat) => (
                                 <li key={stat.stat.name}>
@@ -83,23 +83,27 @@ const PokemonDetails = () => {
                                 console.log("clicked");
                                 onTeam
                                     ? dispatch(
+                                          removePokemon(id, selectedTrainer.id)
+                                      )
+                                    : full
+                                    ? alert("Team is full!")
+                                    : dispatch(
                                           addPokemon(
                                               id,
                                               pokemon.name,
                                               selectedTrainer.id
                                           )
-                                      )
-                                    : full
-                                    ? alert("Team is full!")
-                                    : dispatch(
-                                          removePokemon(id, selectedTrainer.id)
                                       );
                             }}
                         >
                             {
                                 //if pokemon is in trainer's party, display remove button
                                 //if party is full, show party full on button
-                                onTeam ? "Remove" : full ? "Party Full" : "Add"
+                                onTeam
+                                    ? "Release"
+                                    : full
+                                    ? "Party Full"
+                                    : "Catch"
                             }
                         </button>
                     ) : null}

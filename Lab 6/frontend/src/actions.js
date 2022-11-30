@@ -12,14 +12,18 @@ export const removeTrainer = (trainerId) => ({
     },
 });
 
-export const addPokemon = (pokemonId, pokemonName, trainerId) => ({
-    type: "ADD_POKEMON",
-    payload: {
-        id: pokemonId,
-        name: pokemonName,
-        trainer: trainerId,
-    },
-});
+export const addPokemon = (pokemonId, pokemonName, trainerId) => {
+    console.log("addPokemon action called");
+    console.log(pokemonId, pokemonName, trainerId);
+    return {
+        type: "ADD_POKEMON",
+        payload: {
+            id: pokemonId,
+            name: pokemonName,
+            trainer: trainerId,
+        },
+    };
+};
 
 export const removePokemon = (pokemonId, trainerId) => ({
     type: "REMOVE_POKEMON",

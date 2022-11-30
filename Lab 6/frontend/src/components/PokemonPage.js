@@ -21,12 +21,12 @@ const PokemonPage = () => {
     const [cards, setCards] = useState(undefined);
     const [loading, setLoading] = useState(true);
     const [lastPage, setLastPage] = useState(false);
-    const [search, setSearch] = useState("");
     const [selectedTrainer, setSelectedTrainer] = useState(undefined);
     const navigate = useNavigate();
 
     useEffect(() => {
         setSelectedTrainer(trainers.find((item) => item.selected));
+        console.log(selectedTrainer);
     }, []);
 
     let fetchPagePokemon = async () => {
@@ -42,6 +42,7 @@ const PokemonPage = () => {
             navigate("/404");
         }
         //handle last page status
+        // console.log(pokeData);
         setLastPage(pokeData.length !== 20);
         if (pokeData.length === 0) {
             navigate("/404");
@@ -67,6 +68,7 @@ const PokemonPage = () => {
     const buildPokemonCard = (pokemon) => {
         //pull ids from urls
         const pokeId = pokemon.url.split("/")[6];
+        // console.log(pokemon.name);
         //get official art for pokemon
         // let pokeArt = await axios.get(
         //     "http://localhost:4000/pokemon/" + pokeId
@@ -74,6 +76,7 @@ const PokemonPage = () => {
 
         // pokeArt = pokeArt.sprites.other["official-artwork"].front_default;
         let teamIsFull, pokemonIsInTeam;
+        // let selectedTrainer = trainers.find((item) => item.selected);
         if (selectedTrainer) {
             teamIsFull = selectedTrainer.team.length >= 6;
             pokemonIsInTeam = selectedTrainer.team.find(
@@ -108,17 +111,17 @@ const PokemonPage = () => {
                                     console.log("clicked");
                                     pokemonIsInTeam
                                         ? dispatch(
-                                              addPokemon(
+                                              removePokemon(
                                                   pokeId,
-                                                  pokemon.name,
                                                   selectedTrainer.id
                                               )
                                           )
                                         : teamIsFull
                                         ? alert("Team is full!")
                                         : dispatch(
-                                              removePokemon(
+                                              addPokemon(
                                                   pokeId,
+                                                  pokemon.name,
                                                   selectedTrainer.id
                                               )
                                           );
@@ -127,6 +130,11 @@ const PokemonPage = () => {
                                 {
                                     //if pokemon is in trainer's party, display remove button
                                     //if party is full, show party full on button
+                                    // !pokemonIsInTeam
+                                    //     ? "Catch"
+                                    //     : teamIsFull
+                                    //     ? "Party Full"
+                                    //     : "Release"
                                     pokemonIsInTeam
                                         ? "Release"
                                         : teamIsFull
@@ -146,45 +154,31 @@ const PokemonPage = () => {
     return (
         <div>
             <h1>Pokemon Page</h1>
-            <form>
-                <input
-                    type="text"
-                    aria-label="Search"
-                    placeholder="Search"
-                    onChange={(e) => setSearch(e.target.value)}
-                />
-            </form>
+
             <br />
             <div>
                 {loading ? (
                     <h2>Loading...</h2>
                 ) : (
                     <div>
-                        {!search && (
-                            <div className="prevNextContainer">
-                                {Number(pagenum) > 0 && (
-                                    <Link
-                                        to={`/pokemon/page/${
-                                            Number(pagenum) - 1
-                                        }`}
-                                        className="links"
-                                    >
-                                        Previous
-                                    </Link>
-                                )}
+                        <div className="prevNextContainer">
+                            {Number(pagenum) > 0 && (
+                                <Link
+                                    to={`/pokemon/page/${Number(pagenum) - 1}`}
+                                >
+                                    Previous
+                                </Link>
+                            )}
 
-                                {!lastPage && (
-                                    <Link
-                                        to={`/pokemon/page/${
-                                            Number(pagenum) + 1
-                                        }`}
-                                        className="links"
-                                    >
-                                        Next
-                                    </Link>
-                                )}
-                            </div>
-                        )}
+                            {!lastPage && (
+                                <Link
+                                    to={`/pokemon/page/${Number(pagenum) + 1}`}
+                                >
+                                    Next
+                                </Link>
+                            )}
+                        </div>
+
                         <br />
                         <Grid container spacing={5}>
                             {card}
