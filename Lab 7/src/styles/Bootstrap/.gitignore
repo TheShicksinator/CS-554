@@ -1,13 +1,3 @@
-#ignore node_modules and package-lock.json
-
-**/node_modules/**
-**/package-lock.json
-**DS_Store
-
-#ignore all .rdb files
-
-*.rdb
-
 # Ignore docs files
 /_site/
 # Hugo resources folder
