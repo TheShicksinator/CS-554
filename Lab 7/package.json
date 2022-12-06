@@ -1,0 +1,12 @@
+{
+  "name": "lab-7",
+  "version": "1.0.0",
+  "description": "CS 554 Lab 7",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
+  },
+  "author": "Sean Hicks 10448099",
+  "license": "ISC"
+}
