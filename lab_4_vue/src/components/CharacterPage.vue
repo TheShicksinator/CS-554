@@ -6,8 +6,8 @@
         </div>
         <div v-else>
             <div>
-                <router-link :to="{ name: 'characters', params: { page: parseInt(page) - 1 } }" v-if="page > 1">Previous</router-link>
-                <router-link :to="{ name: 'characters', params: { page: parseInt(page) + 1 } }" v-if="!lastPage">Next</router-link>
+                <router-link class="links" :to="{ name: 'characters', params: { page: parseInt(page) - 1 } }" v-if="page > 1">Previous</router-link>
+                <router-link class="links" :to="{ name: 'characters', params: { page: parseInt(page) + 1 } }" v-if="!lastPage">Next</router-link>
             </div>
             <div v-for="character in characters" :key="character.id">
                 <router-link :to="{ name: 'characterDetails', params: { id: character.id } }">
@@ -45,7 +45,6 @@ export default {
                 .catch(error => {
                     console.log(error);
                     this.$router.push({ name: '404' });
-                    // redirect to error page
                 });
         },
     },

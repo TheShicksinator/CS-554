@@ -6,12 +6,12 @@
         </div>
         <div v-else>
             <div>
-                <router-link :to="{ name: 'stories', params: { page: parseInt(page) - 1 } }" v-if="page > 1">Previous</router-link>
-                <router-link :to="{ name: 'stories', params: { page: parseInt(page) + 1 } }" v-if="!lastPage">Next</router-link>
+                <router-link class="links" :to="{ name: 'stories', params: { page: parseInt(page) - 1 } }" v-if="page > 1">Previous</router-link>
+                <router-link class="links" :to="{ name: 'stories', params: { page: parseInt(page) + 1 } }" v-if="!lastPage">Next</router-link>
             </div>
             <div v-for="story in stories" :key="story.id">
                 <router-link :to="{ name: 'storyDetails', params: { id: story.id } }">
-                    <h2>{{ story.name }}</h2>
+                    <h2>{{ story.title }}</h2>
                 </router-link>
             </div>
         </div>

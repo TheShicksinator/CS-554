@@ -9,9 +9,9 @@
             </p>
             <br />
             <div>
-                <router-link :to="{ name: 'characters', params: { page: 1 } }">Characters</router-link>
-                <router-link :to="{ name: 'comics', params: { page: 1 } }">Comics</router-link>
-                <router-link :to="{ name: 'stories', params: { page: 1 } }">Stories</router-link>
+                <router-link class="links" :to="{ name: 'characters', params: { page: 1 } }">Characters</router-link>
+                <router-link class="links" :to="{ name: 'comics', params: { page: 1 } }">Comics</router-link>
+                <router-link class="links" :to="{ name: 'stories', params: { page: 1 } }">Stories</router-link>
             </div>
         </div>
 </template>

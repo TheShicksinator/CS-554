@@ -6,33 +6,31 @@
         </div>
         <div v-else>
             <h2>{{character.name}}</h2>
-            <!-- <img
-                src={{character.thumbnail.path + '.' + character.thumbnail.extension}}
-            /> -->
+            <img
+                :src="character.thumbnail.path + '.' + character.thumbnail.extension"
+                :alt="character.name"
+                class="infoImg"
+            />
             <p>{{character.description}}</p>
             <h3 v-if="character.comics.items.length">Comics</h3>
             <ul>
-                <div v-for="comic in character.comics.items" :key="comic.resourceURI">
-                    <li>
-                        <router-link 
-                            :to="{name: 'comicDetails', params: { id: comic.resourceURI.split('/').pop()}}"
-                        >
-                            {{comic.name}}
-                        </router-link>
-                    </li>
-                </div>
+                <li v-for="comic in character.comics.items" :key="comic.resourceURI">
+                    <router-link 
+                        :to="{name: 'comicDetails', params: { id: comic.resourceURI.split('/').pop()}}"
+                    >
+                        {{comic.name}}
+                    </router-link>
+                </li>
             </ul>
             <h3 v-if="character.stories.items.length">Stories</h3>
             <ul>
-                <div v-for="story in character.stories.items" :key="story.resourceURI">
-                    <li>
-                        <router-link
-                            :to="{name: 'storyDetails', params: { id: story.resourceURI.split('/').pop()}}"
-                        >
-                            {{story.name}}
-                        </router-link>
-                    </li>
-                </div>
+                <li v-for="story in character.stories.items" :key="story.resourceURI">
+                    <router-link
+                        :to="{name: 'storyDetails', params: { id: story.resourceURI.split('/').pop()}}"
+                    >
+                        {{story.name}}
+                    </router-link>
+                </li>
             </ul>
         </div>
     </div>
@@ -42,7 +40,7 @@
 import axios from "axios";
 
 export default {
-    name: "CharacterPage",
+    name: "CharacterDetails",
     data() {
         return {
             character: {},
