@@ -2,6 +2,8 @@
   "name": "lab_4_vue",
   "version": "0.1.0",
   "private": true,
+  "author": "Sean Hicks 10448099",
+  "description": "Vue version of lab 4",
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
