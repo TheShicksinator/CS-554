@@ -13,7 +13,7 @@
 </div>
 
 <style>
-	.links {
+	:global(.links) {
 		margin: 20px;
 		color: black;
 	}
