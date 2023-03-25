@@ -1,13 +1,13 @@
 <script>
 	export let data;
-	let { page, charData, lastPage } = data;
+	let { page, storyData, lastPage } = data;
 </script>
 
 {#if page > 1}
 	<a
 		data-sveltekit-reload
 		data-sveltekit-preload-data="hover"
-		href="/characters/page/{parseInt(page) - 1}"
+		href="/stories/page/{parseInt(page) - 1}"
 		class="links">Previous Page</a
 	>
 {/if}
@@ -15,12 +15,12 @@
 	<a
 		data-sveltekit-reload
 		data-sveltekit-preload-data="hover"
-		href="/characters/page/{parseInt(page) + 1}"
+		href="/stories/page/{parseInt(page) + 1}"
 		class="links">Next Page</a
 	>
 {/if}
 <br />
-{#each charData as { id, name } (id)}
-	<a href="/characters/{id}">{name}</a>
+{#each storyData as { id, title } (id)}
+	<a href="/stories/{id}">{title}</a>
 	<br />
 {/each}

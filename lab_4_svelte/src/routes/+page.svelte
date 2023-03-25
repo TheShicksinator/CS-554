@@ -12,8 +12,8 @@
 	<a class="links" href="/characters/history">Character History</a>
 </div>
 
-<style>
-	:global(.links) {
+<style global>
+	.links {
 		margin: 20px;
 		color: black;
 	}
