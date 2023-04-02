@@ -1,6 +1,6 @@
 <script>
 	export let data;
-	let { story } = data;
+	$: ({ story } = data);
 </script>
 
 <h2>{story.title}</h2>

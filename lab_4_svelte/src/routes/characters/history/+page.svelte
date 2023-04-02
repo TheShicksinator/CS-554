@@ -1,6 +1,6 @@
 <script>
 	export let data;
-	let { charData } = data;
+	$: ({ charData } = data);
 </script>
 
 {#each charData as { id, name } (id)}

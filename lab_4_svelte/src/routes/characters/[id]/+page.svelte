@@ -1,6 +1,6 @@
 <script>
 	export let data;
-	let { character } = data;
+	$: ({ character } = data);
 </script>
 
 <h2>{character.name}</h2>
