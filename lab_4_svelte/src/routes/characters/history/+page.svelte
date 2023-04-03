@@ -3,7 +3,7 @@
 	$: ({ charData } = data);
 </script>
 
-{#each charData as { id, name } (id)}
+{#each charData as { id, name }}
 	<a href="/characters/{id}">{name}</a>
 	<br />
 {/each}
