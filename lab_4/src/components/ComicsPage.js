@@ -74,6 +74,7 @@ const ComicsPage = () => {
                     onChange={(e) =>
                         setSearch(e.target.value.trim() ? e.target.value : "")
                     }
+                    value={search}
                 />
             </form>
             <div>

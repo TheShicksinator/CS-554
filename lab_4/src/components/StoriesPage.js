@@ -76,6 +76,7 @@ const StoriesPage = () => {
                         setSearch(e.target.value.trim() ? e.target.value : "")
                     }
                     style={{ width: "148px" }}
+                    value={search}
                 />
             </form>
             <div>
