@@ -71,7 +71,9 @@ const ComicsPage = () => {
                     type="text"
                     aria-label="Search"
                     placeholder="Search"
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(e) =>
+                        setSearch(e.target.value.trim() ? e.target.value : "")
+                    }
                 />
             </form>
             <div>

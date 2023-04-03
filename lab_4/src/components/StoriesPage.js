@@ -72,7 +72,9 @@ const StoriesPage = () => {
                     type="text"
                     aria-label="Search"
                     placeholder="Search By Character IDs"
-                    onChange={(e) => setSearch(e.target.value)}
+                    onChange={(e) =>
+                        setSearch(e.target.value.trim() ? e.target.value : "")
+                    }
                     style={{ width: "148px" }}
                 />
             </form>
@@ -81,25 +83,27 @@ const StoriesPage = () => {
                     <h2>Loading...</h2>
                 ) : (
                     <div>
-                        <div className="prevNextContainer">
-                            {Number(page) > 1 && (
-                                <Link
-                                    to={`/stories/page/${Number(page) - 1}`}
-                                    className="links"
-                                >
-                                    Previous
-                                </Link>
-                            )}
+                        {!search && (
+                            <div className="prevNextContainer">
+                                {Number(page) > 1 && (
+                                    <Link
+                                        to={`/stories/page/${Number(page) - 1}`}
+                                        className="links"
+                                    >
+                                        Previous
+                                    </Link>
+                                )}
 
-                            {!lastPage && (
-                                <Link
-                                    to={`/stories/page/${Number(page) + 1}`}
-                                    className="links"
-                                >
-                                    Next
-                                </Link>
-                            )}
-                        </div>
+                                {!lastPage && (
+                                    <Link
+                                        to={`/stories/page/${Number(page) + 1}`}
+                                        className="links"
+                                    >
+                                        Next
+                                    </Link>
+                                )}
+                            </div>
+                        )}
                         <br />
                         {stories.map((story) => {
                             return (
