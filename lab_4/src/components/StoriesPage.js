@@ -46,7 +46,7 @@ const StoriesPage = () => {
             let storiesData = [];
             let data;
             try {
-                data = await axios.post(
+                data = await axios.get(
                     `http://localhost:4000/api/stories/search/${search}`
                 );
                 storiesData = data.data.results;

@@ -45,7 +45,7 @@ const ComicsPage = () => {
             let comicsData = [];
             let data;
             try {
-                data = await axios.post(
+                data = await axios.get(
                     `http://localhost:4000/api/comics/search/${search}`
                 );
                 comicsData = data.data.results;

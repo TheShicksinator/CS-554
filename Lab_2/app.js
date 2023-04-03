@@ -64,7 +64,7 @@ app.get("/api/characters/history", async (req, res, next) => {
     }
 });
 
-app.post("/api/characters/search/:search", async (req, res) => {
+app.get("/api/characters/search/:search", async (req, res) => {
     try {
         const search = req.params.search;
         let chars = JSON.parse(await client.get("search:" + search));
@@ -159,7 +159,7 @@ app.get("/api/comics/page/:pagenum", async (req, res) => {
     }
 });
 
-app.post("/api/comics/search/:search", async (req, res) => {
+app.get("/api/comics/search/:search", async (req, res) => {
     try {
         const search = req.params.search;
         let comics = JSON.parse(await client.get("search:" + search));
@@ -249,7 +249,7 @@ app.get("/api/stories/page/:pagenum", async (req, res) => {
     }
 });
 
-app.post("/api/stories/search/:search", async (req, res) => {
+app.get("/api/stories/search/:search", async (req, res) => {
     try {
         const search = req.params.search;
         let stories = JSON.parse(await client.get("search:" + search));

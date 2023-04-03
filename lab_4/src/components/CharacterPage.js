@@ -44,7 +44,7 @@ const CharacterPage = () => {
             let charData = [];
             let data;
             try {
-                data = await axios.post(
+                data = await axios.get(
                     `http://localhost:4000/api/characters/search/${search}`
                 );
                 charData = data.data.results;
