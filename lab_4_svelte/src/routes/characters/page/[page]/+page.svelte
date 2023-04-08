@@ -9,8 +9,8 @@
 		console.log(data.results);
 		return data.results;
 	}
-	$: charData = search.trim() ? searchResults : data.charData;
 	$: searchResults = fetchSearchResults(search);
+	$: charData = search.trim() ? searchResults : data.charData;
 </script>
 
 <form>

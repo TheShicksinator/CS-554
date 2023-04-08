@@ -13,8 +13,8 @@
 			return;
 		}
 	}
-	$: storyData = search.trim() ? searchResults : data.storyData;
 	$: searchResults = fetchSearchResults(search);
+	$: storyData = search.trim() ? searchResults : data.storyData;
 </script>
 
 <form>

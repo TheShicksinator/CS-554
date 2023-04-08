@@ -9,8 +9,8 @@
 		console.log(data.results);
 		return data.results;
 	}
-	$: comicData = search.trim() ? searchResults : data.comicData;
 	$: searchResults = fetchSearchResults(search);
+	$: comicData = search.trim() ? searchResults : data.comicData;
 </script>
 
 <form>
